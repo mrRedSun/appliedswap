@@ -1,7 +1,8 @@
 const { expect } = require("chai");
 import { Signer } from "@ethersproject/abstract-signer";
 import { BigNumber, Contract } from "ethers";
-import { ethers } from "hardhat";
+import { ethers, network } from "hardhat";
+import { Factory__factory } from "../typechain";
 
 const toWei = (value: BigNumber | number) =>
     ethers.utils.parseEther(value.toString());
@@ -13,6 +14,22 @@ const fromWei = (value: string | BigNumber | number) =>
 
 const getBalance = ethers.provider.getBalance;
 
+const createExchange = async (
+    factory: any,
+    tokenAddress: string,
+    sender: Signer
+) => {
+    const exchangeAddress = await factory
+        .connect(sender)
+        .callStatic.createExchange(tokenAddress);
+
+    await factory.connect(sender).createExchange(tokenAddress);
+
+    const Exchange = await ethers.getContractFactory("Exchange");
+
+    return await Exchange.attach(exchangeAddress);
+};
+
 describe("Exchange", () => {
     let owner: Signer;
     let user: Signer;
@@ -20,6 +37,12 @@ describe("Exchange", () => {
     let token: Contract;
 
     beforeEach(async () => {
+        network.provider.request({
+            method: "hardhat_reset",
+        });
+
+        //reset network to reset wallet balances
+
         [owner, user] = await ethers.getSigners();
 
         const Token = await ethers.getContractFactory("Token");
@@ -100,7 +123,7 @@ describe("Exchange", () => {
 
             const userBalanceAfter = await getBalance(user.getAddress());
             expect(fromWei(userBalanceAfter.sub(userBalanceBefore))).to.equal(
-                "-1.000067406735105268"
+                "-1.000100739389490045"
             );
 
             const userTokenBalance = await token.balanceOf(user.getAddress());
@@ -159,7 +182,7 @@ describe("Exchange", () => {
 
             const userBalanceAfter = await getBalance(user.getAddress());
             expect(fromWei(userBalanceAfter.sub(userBalanceBefore))).to.equal(
-                "0.988968628854185387"
+                "0.988944981129850816"
             );
 
             const userTokenBalance = await token.balanceOf(user.getAddress());
@@ -186,7 +209,7 @@ describe("Exchange", () => {
             await exchange.connect(user).tokenToEthSwap(toWei(0), toWei(0));
 
             const userBalance = await getBalance(user.getAddress());
-            expect(fromWei(userBalance)).to.equal("9999.988602395017073575");
+            expect(fromWei(userBalance)).to.equal("9999.999856572716173585");
 
             const userTokenBalance = await token.balanceOf(user.getAddress());
             expect(fromWei(userTokenBalance)).to.equal("2.0");
@@ -198,6 +221,75 @@ describe("Exchange", () => {
                 exchange.address
             );
             expect(fromWei(exchangeTokenBalance)).to.equal("2000.0");
+        });
+    });
+
+    describe("tokenToTokenSwap", async () => {
+        it("swaps token for token", async () => {
+            const Factory = await ethers.getContractFactory("Factory");
+            const Token = await ethers.getContractFactory("Token");
+
+            const factory = await Factory.deploy();
+            const token = await Token.deploy("TokenA", "AAA", toWei(1000000));
+            const token2 = await Token.connect(user).deploy(
+                "TokenB",
+                "BBBB",
+                toWei(1000000)
+            );
+
+            await factory.deployed();
+            await token.deployed();
+            await token2.deployed();
+
+            const exchange = await createExchange(
+                factory,
+                token.address,
+                owner
+            );
+            const exchange2 = await createExchange(
+                factory,
+                token2.address,
+                user
+            );
+
+            await token.approve(exchange.address, toWei(2000));
+            await exchange.addLiquidity(toWei(2000), { value: toWei(1000) });
+
+            await token2.connect(user).approve(exchange2.address, toWei(1000));
+            await exchange2
+                .connect(user)
+                .addLiquidity(toWei(1000), { value: toWei(1000) });
+
+            expect(await token2.balanceOf(await owner.getAddress())).to.equal(
+                0
+            );
+
+            await token.approve(exchange.address, toWei(10));
+            const tokensExpected = await exchange.getTokenToTokenAmount(
+                toWei(10),
+                token2.address
+            );
+
+            const tokensActual = await exchange.tokenToTokenSwap(
+                toWei(10),
+                toWei(4.8),
+                token2.address
+            );
+
+            expect(
+                fromWei(await token2.balanceOf(await owner.getAddress()))
+            ).to.equal(fromWei(tokensExpected));
+
+            expect(await token.balanceOf(await user.getAddress())).to.equal(0);
+
+            await token2.connect(user).approve(exchange2.address, toWei(10));
+            await exchange2
+                .connect(user)
+                .tokenToTokenSwap(toWei(10), toWei(19.6), token.address);
+
+            expect(
+                fromWei(await token.balanceOf(await user.getAddress()))
+            ).to.equal("19.602080509528011079");
         });
     });
 });
