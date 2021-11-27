@@ -1,0 +1,29 @@
+Arguments: 
+  /Users/mr_redsun/.nvm/versions/node/v14.17.6/bin/node /usr/local/Cellar/yarn/1.22.17/libexec/bin/yarn.js add -D hardhat
+
+PATH: 
+  /Users/mr_redsun/.nvm/versions/node/v14.17.6/bin:/Users/mr_redsun/.rvm/gems/ruby-2.6.0/bin:/Users/mr_redsun/.rvm/gems/ruby-2.6.0@global/bin:/Users/mr_redsun/.rvm/rubies/ruby-2.6.0/bin:/Users/mr_redsun/.rvm/bin:/Users/mr_redsun/Library/Android/sdk/flutter/.pub-cache/bin:/usr/local/opt/util-linux/sbin:/usr/local/opt/util-linux/bin:/Users/mr_redsun/Library/Android/sdk/flutter/bin:/Users/mr_redsun/Library/Android/sdk/platform-tools:/Users/mr_redsun/Library/Android/sdk/emulator:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/Apple/usr/bin:/usr/local/share/dotnet:~/.dotnet/tools:/usr/local/go/bin:/Library/Frameworks/Mono.framework/Versions/Current/Commands:/Applications/Wireshark.app/Contents/MacOS:/usr/local/Cellar/openssl@1.1/1.1.1l/bin:/Users/mr_redsun/.pub-cache/bin:/Users/mr_redsun/.nvm/versions/node/v14.17.6/bin
+
+Yarn version: 
+  1.22.17
+
+Node version: 
+  14.17.6
+
+Platform: 
+  darwin x64
+
+Trace: 
+  Error: https://npm.crg.one/hardhat: ETIMEDOUT
+      at Timeout._onTimeout (/usr/local/Cellar/yarn/1.22.17/libexec/lib/cli.js:141543:19)
+      at listOnTimeout (internal/timers.js:557:17)
+      at processTimers (internal/timers.js:500:7)
+
+npm manifest: 
+  No manifest
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile
