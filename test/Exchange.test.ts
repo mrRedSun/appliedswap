@@ -270,7 +270,7 @@ describe("Exchange", () => {
                 token2.address
             );
 
-            const tokensActual = await exchange.tokenToTokenSwap(
+            await exchange.tokenToTokenSwap(
                 toWei(10),
                 toWei(4.8),
                 token2.address
