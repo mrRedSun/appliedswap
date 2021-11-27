@@ -10,6 +10,7 @@ import "../abstraction/IExchange.sol";
 contract Exchange is ERC20 {
     address public tokenAddress;
     address public factoryAddress;
+    uint256 public feeInPoints = 100; // point = 1/100 of 1%
 
     constructor(address _token)
         ERC20(
@@ -60,7 +61,8 @@ contract Exchange is ERC20 {
         uint256 totalTokensBought = getAmount(
             msg.value,
             address(this).balance - msg.value,
-            tokenReserve
+            tokenReserve,
+            feeInPoints
         );
 
         require(totalTokensBought >= _minTokens, "insufficient output total");
@@ -73,7 +75,8 @@ contract Exchange is ERC20 {
         uint256 ethBought = getAmount(
             _tokensSold,
             tokenReserve,
-            address(this).balance
+            address(this).balance,
+            feeInPoints
         );
 
         require(ethBought >= _minEth, "insufficient output amount");
@@ -105,7 +108,8 @@ contract Exchange is ERC20 {
         uint256 ethBought = getAmount(
             _tokensSold,
             tokenReserve,
-            address(this).balance
+            address(this).balance,
+            feeInPoints
         );
 
         IERC20(tokenAddress).transferFrom(
@@ -125,26 +129,39 @@ contract Exchange is ERC20 {
 
         uint256 tokenReserve = getReserve();
 
-        return getAmount(_tokenSold, tokenReserve, address(this).balance);
+        return
+            getAmount(
+                _tokenSold,
+                tokenReserve,
+                address(this).balance,
+                feeInPoints
+            );
     }
 
     function getTokenAmount(uint256 _ethSold) public view returns (uint256) {
         require(_ethSold > 0, "ethSold should be more than 0");
         uint256 tokenReserve = getReserve();
 
-        return getAmount(_ethSold, address(this).balance, tokenReserve);
+        return
+            getAmount(
+                _ethSold,
+                address(this).balance,
+                tokenReserve,
+                feeInPoints
+            );
     }
 
     function getAmount(
-        uint256 inputAmount,
-        uint256 inputReserve,
-        uint256 outputReserve
+        uint256 _inputAmount,
+        uint256 _inputReserve,
+        uint256 _outputReserve,
+        uint256 _feeInPoints
     ) private pure returns (uint256) {
-        require(inputReserve > 0 && outputReserve > 0, "invalid reserves");
+        require(_inputReserve > 0 && _outputReserve > 0, "invalid reserves");
 
-        uint256 inputAmountWithFee = inputAmount * 99;
-        uint256 numerator = inputAmountWithFee * outputReserve;
-        uint256 denominator = (inputReserve * 100) + inputAmountWithFee;
+        uint256 inputAmountWithFee = _inputAmount * (10000 - _feeInPoints);
+        uint256 numerator = inputAmountWithFee * _outputReserve;
+        uint256 denominator = (_inputReserve * 10000) + inputAmountWithFee;
 
         return numerator / denominator;
     }
