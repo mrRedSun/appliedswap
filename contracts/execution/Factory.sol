@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "./Exchange.sol";
-import "../abstraction/IFactory.sol";
+import "../interfaces/IFactory.sol";
 
 contract Factory is IFactory {
     mapping(address => address) public tokenToExchange;

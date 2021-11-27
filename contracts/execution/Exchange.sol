@@ -4,8 +4,8 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-import "../abstraction/IFactory.sol";
-import "../abstraction/IExchange.sol";
+import "../interfaces/IFactory.sol";
+import "../interfaces/IExchange.sol";
 
 contract Exchange is ERC20 {
     address public tokenAddress;
@@ -14,8 +14,8 @@ contract Exchange is ERC20 {
 
     constructor(address _token)
         ERC20(
-            concat(IERC20Metadata(_token).name(), " - ETH"),
-            concat(IERC20Metadata(_token).symbol(), " LP")
+            concat(IERC20Metadata(_token).name(), "-Eth"),
+            concat(IERC20Metadata(_token).symbol(), "_LP")
         )
     {
         require(_token != address(0), "Token address is not valid");
